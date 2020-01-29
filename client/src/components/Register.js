@@ -3,8 +3,9 @@ import React, {useState, useEffect } from 'react';
 import { withFormik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import axiosWithAuth from '../utils/axiosWithAuth';
+import axios from 'axios';
 
-const Register = ({values, errors, touched, status}) => {
+const Register = ({values, errors, touched, status, ...props}) => {
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
@@ -15,6 +16,7 @@ const Register = ({values, errors, touched, status}) => {
 
     return (
         <Form>
+            <h4>register</h4>
             <label>
                 username
                 <Field 
@@ -31,7 +33,7 @@ const Register = ({values, errors, touched, status}) => {
                 password
                 <Field 
                     type='password'
-                    name='username'
+                    name='password'
                 />
                     {touched.password && errors.username && (
                     <p className="errors">
@@ -56,13 +58,20 @@ const FormikRegister = withFormik({
         password: Yup.string().required().min(3)
     }),
     handleSubmit(values, {props, setStatus}){
-        axiosWithAuth()
-        .post('/auth/register', values)
-        .then(response => {
-            console.log(response)
-        })
-        .catch(error => {
-            console.log('No dice..', error.response);
+        const first = axios.post('http://localhost:5000/api/auth/register', values)
+        const second = axios.post('http://localhost:5000/api/auth/login', values)
+        
+        axios
+        .all([first, second])
+        .then(
+            axios.spread((...responses) => {
+            alert('Account successfully created!')
+            console.log(responses[0], responses[1]);
+            props.history.push('/users')
+            })
+        )
+        .catch(errors => {
+            console.log('No dice..', errors);
         });
     }
 })(Register);

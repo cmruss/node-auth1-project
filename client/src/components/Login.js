@@ -1,10 +1,11 @@
 
 import React, {useState, useEffect } from 'react';
+import { withRouter } from 'react-router-dom';
 import { withFormik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import axiosWithAuth from '../utils/axiosWithAuth';
 
-const Login = ({values, errors, touched, status}) => {
+const Login = ( { values, errors, touched, status, ...props}) => {
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
@@ -15,6 +16,7 @@ const Login = ({values, errors, touched, status}) => {
 
     return (
         <Form>
+            <h4>login</h4>
             <label>
                 username
                 <Field 
@@ -31,7 +33,7 @@ const Login = ({values, errors, touched, status}) => {
                 password
                 <Field 
                     type='password'
-                    name='username'
+                    name='password'
                 />
                     {touched.password && errors.username && (
                     <p className="errors">
@@ -56,16 +58,18 @@ const FormikLogin = withFormik({
         password: Yup.string().required().min(3)
     }),
     handleSubmit(values, {props, setStatus}){
+        console.log(props)
+
         axiosWithAuth()
         .post('/auth/login', values)
         .then(response => {
-            localStorage.setItem('token', response.data.payload);
-            setStatus(response.data);
+            console.log(response)
+            props.history.push('/users')
         })
         .catch(error => {
             console.log('No dice..', error.response);
         });
     }
-})(Login);
+})(withRouter(Login));
 
-export default FormikLogin;
+export default (FormikLogin);
